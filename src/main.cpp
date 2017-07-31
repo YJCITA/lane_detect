@@ -22,7 +22,7 @@ void Run(string path)
     Mat frame;
     VideoCapture cap(path); // open the video file for reading
 
-    if ( !cap.isOpened() )  // if not success, exit program
+    if( !cap.isOpened() )  // if not success, exit program
         cout << "Cannot open the video file" << endl;
 
     //cap.set(CV_CAP_PROP_POS_MSEC, 300); //start the video at 300ms
@@ -35,14 +35,14 @@ void Run(string path)
 
     while(1){
          // read a new frame from video
-        if (!cap.read(frame)) {
+        if(!cap.read(frame)) {
 			//if not success, break loop
             cout << "Cannot read the frame from video file" << endl;
             break;
         }
 
         cvtColor(frame, frame, CV_BGR2GRAY);
-        lane_detect.detectLane(frame);
+        lane_detect.DetectLane(frame);
 		
 		// 按键事件，空格暂停，其他跳出循环
 		if (cvWaitKey(10) == 32){
@@ -56,6 +56,6 @@ void Run(string path)
 
 int main()
 {
-    Run("/home/yj/bak/data/lane/data_develop/rec_20170518_054835.mp4");
+    Run("/home/yj/bak/data/lane/data_develop/2/rec_20170518_055838.mp4");
     destroyAllWindows();
 }

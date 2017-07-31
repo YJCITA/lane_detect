@@ -13,60 +13,46 @@
 #include <math.h>
 #include <time.h>
 
-using namespace std;
-using namespace cv;
+// using namespace std;
+// using namespace cv;
 
 class LaneDetect
 {
 public:
     LaneDetect();
 	
-	void Init(Mat startFrame);
+	void Init(cv::Mat startFrame);
 	
-    void updateSensitivity();
+	void DetectLane(cv::Mat &nxt);
+	
+    void UpdateSensitivity();
 
-    void getLane();
+    void MarkLane();
 
-    void markLane();
+    void RemoveBlob();
 
-    void blobRemoval();
-
-    void detectLane(Mat &nxt);
-
-    Mat getResult();
 
 private:
 	
 public:
-    Mat currFrame; //stores the upcoming frame
-    Mat temp;      //stores intermediate results
-    Mat temp2;     //stores the final lane segments
-
-    int diff, diffL, diffR;
-    int laneWidth;
-    int diffThreshTop;
-    int diffThreshLow;
-    int ROIrows;
-    int vertical_left;
-    int vertical_right;
-    int vertical_top;
-    int smallLaneArea;
-    int longLane;
-    int  vanishingPt;
-    float maxLaneWidth;
+    cv::Mat m_currFrame; //stores the upcoming frame
+    cv::Mat m_frame_temp1;      //stores intermediate results
+    cv::Mat m_frame_temp2;     //stores the final lane segments
+    
+    int m_ROIrows;
+    int m_vertical_left;
+    int m_vertical_right;
+    int m_vertical_top;
+    int m_smallLaneArea;
+    int m_longLane;
+    int  m_vanishingPt;
+    float m_maxLaneWidth;
 
     //to store various blob properties
-    Mat binary_image; //used for blob removal
-    int minSize;
-    int ratio;
-    float  contour_area;
-    float blob_angle_deg;
-    float bounding_width;
-    float bounding_length;
-    Size2f sz;
-    vector< vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    RotatedRect rotated_rect;
+    cv::Mat m_binary_image; //used for blob removal
+    int m_minSize;
+    int m_ratio;
+
 
 };//end of class LaneDetect
 
