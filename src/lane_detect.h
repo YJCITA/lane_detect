@@ -29,15 +29,15 @@ public:
 
     void MarkLane();
 
-    void RemoveBlob();
+    void RemoveInvalidBlob();
 
 
 private:
 	
 public:
     cv::Mat m_currFrame; //stores the upcoming frame
-    cv::Mat m_frame_temp1;      //stores intermediate results
-    cv::Mat m_frame_temp2;     //stores the final lane segments
+    cv::Mat m_frame_midstep;      //stores intermediate results
+    cv::Mat m_frame_laneBlobs;     //stores the final lane segments
     
     int m_ROIrows;
     int m_vertical_left;
@@ -49,7 +49,6 @@ public:
     float m_maxLaneWidth;
 
     //to store various blob properties
-    cv::Mat m_binary_image; //used for blob removal
     int m_minSize;
     int m_ratio;
 

@@ -14,33 +14,36 @@
 #include <time.h>
 
 #include "lane_detect.h"
-using namespace std;
-using namespace cv;
 
-void Run(string path)
+void Run(std::string path)
 {
-    Mat frame;
-    VideoCapture cap(path); // open the video file for reading
+    cv::Mat frame;
+    cv::VideoCapture cap(path); // open the video file for reading
 
     if( !cap.isOpened() )  // if not success, exit program
-        cout << "Cannot open the video file" << endl;
+        std::cout << "Cannot open the video file" << std::endl;
 
     //cap.set(CV_CAP_PROP_POS_MSEC, 300); //start the video at 300ms
     double fps = cap.get(CV_CAP_PROP_FPS); //get the frames per seconds of the video
-    cout << "Input video's Frame per seconds : " << fps << endl;
+    std::cout << "Input video's Frame per seconds : " << fps << std::endl;
+	
+	// 第position帧 开始读取数据
+	double position = 1; //1900 ;
+	cap.set(CV_CAP_PROP_POS_FRAMES, position);
 
     cap.read(frame);
     LaneDetect lane_detect;
 	lane_detect.Init(frame);
 
+	int frame_index = position - 1;
     while(1){
          // read a new frame from video
         if(!cap.read(frame)) {
-			//if not success, break loop
-            cout << "Cannot read the frame from video file" << endl;
+            std::cout << "Cannot read the frame from video file" << std::endl;
             break;
         }
-
+		
+		std::cout<<"frame_index: "<< ++frame_index <<std::endl;
         cvtColor(frame, frame, CV_BGR2GRAY);
         lane_detect.DetectLane(frame);
 		
@@ -57,5 +60,5 @@ void Run(string path)
 int main()
 {
     Run("/home/yj/bak/data/lane/data_develop/2/rec_20170518_055838.mp4");
-    destroyAllWindows();
+    cv::destroyAllWindows();
 }
