@@ -34,6 +34,8 @@ DEFINE_double(y_end_offset, 5.0, "y end offset");
 DEFINE_double(ipm_width, 400, "ipm iamge width");
 DEFINE_double(ipm_height, 600, "ipm iamge height");
 
+DEFINE_int32(frame_start_index, 0, "frame_start_index");
+
 // 初始化ipm参数
 void InitIPM(CameraPara& camera_para, IPMPara& ipm_para)
 {
@@ -74,8 +76,8 @@ void Run(std::string path)
 //     double fps = cap.get(CV_CAP_PROP_FPS); //get the frames per seconds of the video
 //     std::cout << "Input video's Frame per seconds : " << fps << std::endl;
 	// 第position帧 开始读取数据
-	double position = 1; //1900 ;
-	cap.set(CV_CAP_PROP_POS_FRAMES, position);
+	double position = FLAGS_frame_start_index; //1900 ;
+	cap.set(CV_CAP_PROP_POS_FRAMES, FLAGS_frame_start_index);
 	
 	// init ipm
 	CameraPara camera_para;
@@ -93,24 +95,25 @@ void Run(std::string path)
 	cv::Mat video_frame;
     cap.read(video_frame);
 	LaneDetect lane_detect;
-	lane_detect.Init(video_frame);
+	lane_detect.InitOnIPM(cv::Size(ipm_para.width, ipm_para.height));
 	
-	int frame_index = position - 1;
+	int frame_index = FLAGS_frame_start_index - 1;
     while(1){
          // read a new video_frame from video
         if(!cap.read(video_frame)) {
             std::cout << "Cannot read the video_frame from video file" << std::endl;
             break;
         }
+		cvtColor(video_frame, video_frame, CV_BGR2GRAY);
 		
 		// IPM
 		cv::Mat ipm_image;
 		cv::warpPerspective(video_frame, ipm_image, g_H_trans, cv::Size(FLAGS_ipm_width, FLAGS_ipm_height));
-		cv::imshow("ipm", ipm_image);
+// 		cv::imshow("ipm", ipm_image);
 		
+		// lane detect
 		std::cout<<"frame_index: "<< ++frame_index <<std::endl;
-        cvtColor(video_frame, video_frame, CV_BGR2GRAY);
-        lane_detect.DetectLane(video_frame);
+        lane_detect.DetectLane(ipm_image);
 
 		// 按键事件，空格暂停，其他跳出循环
 		if (cvWaitKey(10) == 32){

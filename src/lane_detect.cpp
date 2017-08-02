@@ -15,7 +15,7 @@ void LaneDetect::Init(cv::Mat startFrame)
 	m_frame_midstep = cv::Mat(m_currFrame.rows, m_currFrame.cols, CV_8UC1, 0.0);//stores possible lane markings
 	m_frame_laneBlobs = cv::Mat(m_currFrame.rows, m_currFrame.cols, CV_8UC1, 0.0);//stores finally selected lane marks
 
-	m_vanishingPt = m_currFrame.rows/2 + 80;                       //for simplicity right now
+	m_vanishingPt = 0; //m_currFrame.rows/2 + 80;                       //for simplicity right now
 	m_ROIrows = m_currFrame.rows - m_vanishingPt;                 //rows in region of interest
 // 	m_minSize = 0.00015 * (m_currFrame.cols*m_currFrame.rows);    //min size of any region to be selected as lane
 	m_minSize = 0.00003 * (m_currFrame.cols*m_currFrame.rows);    //min size of any region to be selected as lane
@@ -39,11 +39,37 @@ void LaneDetect::Init(cv::Mat startFrame)
 	cv::resizeWindow("laneBlobs", 640, 480);
 }
 
+void LaneDetect::InitOnIPM(cv::Size frame_size)
+{
+	m_frame_midstep = cv::Mat(frame_size.height, frame_size.width, CV_8UC1, 0.0);//stores possible lane markings
+	m_frame_laneBlobs = cv::Mat(frame_size.height, frame_size.width, CV_8UC1, 0.0);//stores finally selected lane marks
+
+	m_vanishingPt = 0; //frame_size.height/2 + 80;                       //for simplicity right now
+	m_ROIrows = frame_size.height - m_vanishingPt;                 //rows in region of interest
+	m_minSize = 0.00003 * (frame_size.width*frame_size.height);    //min size of any region to be selected as lane
+	m_maxLaneWidth = 0.01 * frame_size.width;                     //approximate max lane width based on image size
+	m_smallLaneArea = 7 * m_minSize;
+	m_longLane = 0.3 * frame_size.height;
+	m_ratio = 5;
+
+	//these mark the possible ROI for vertical lane segments and to filter vehicle glare
+	m_vertical_left  = 0;
+	m_vertical_right = frame_size.width;
+	m_vertical_top   = 0;
+	
+	cv::namedWindow("currframe", 2);
+	cv::resizeWindow("currframe", frame_size.width, frame_size.height);
+	cv::namedWindow("midstep", 2);
+	cv::resizeWindow("midstep", frame_size.width, frame_size.height);
+	cv::namedWindow("laneBlobs", 2);
+	cv::resizeWindow("laneBlobs", frame_size.width, frame_size.height);
+}
+
 
 void LaneDetect::DetectLane(cv::Mat &nxt)
 {
-// 	m_currFrame = nxt;                        //if processing is to be done at original size
-	resize(nxt ,m_currFrame, m_currFrame.size()); //resizing the input image for faster processing
+	m_currFrame = nxt;                        //if processing is to be done at original size
+// 	resize(nxt ,m_currFrame, m_currFrame.size()); //resizing the input image for faster processing
 	
 	// UpdateSensitivity();
 	// TODO: 根据外参数设定
@@ -78,7 +104,8 @@ void LaneDetect::MarkLane()
 		// IF COLOUR IMAGE IS GIVEN then additional check can be done
 		// lane markings RGB values will be nearly same to each other(row_index.e without any hue)
 		// min lane width is taken to be 5
-		int laneWidth = 5 + m_maxLaneWidth*(row_index - m_vanishingPt)/m_ROIrows;
+// 		int laneWidth = 5 + m_maxLaneWidth*(row_index - m_vanishingPt)/m_ROIrows;
+		int laneWidth = m_maxLaneWidth;
 		for(int col_index = laneWidth; col_index < m_currFrame.cols - laneWidth; col_index++){
 			int diffL = m_currFrame.at<uchar>(row_index, col_index) - m_currFrame.at<uchar>(row_index, col_index - laneWidth);
 			int diffR = m_currFrame.at<uchar>(row_index, col_index) - m_currFrame.at<uchar>(row_index, col_index + laneWidth);
@@ -134,7 +161,8 @@ void LaneDetect::RemoveInvalidBlob()
 				if(bounding_length>m_longLane || bounding_width >m_longLane){
 					cv::drawContours(m_currFrame, contours, i, cv::Scalar(255), CV_FILLED, 8);
 					cv::drawContours(m_frame_laneBlobs, contours, i, cv::Scalar(255), CV_FILLED, 8);
-				}else if ( abs(blob_angle_deg) > 10 && (abs(blob_angle_deg) < 80 || is_near_center_bottom) ){
+// 				}else if ( abs(blob_angle_deg) > 10 && (abs(blob_angle_deg) < 80 || is_near_center_bottom) ){
+				}else if ( abs(blob_angle_deg) > 45 ){
 					//angle of orientation of blob should not be near horizontal or vertical
 					//vertical blobs are allowed only near center-bottom region, where centre lane mark is present
 					//length:width >= m_ratio for valid line segments

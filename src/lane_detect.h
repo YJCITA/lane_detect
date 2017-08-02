@@ -23,6 +23,8 @@ public:
 	
 	void Init(cv::Mat startFrame);
 	
+	void InitOnIPM(cv::Size frame_size);
+	
 	void DetectLane(cv::Mat &nxt);
 	
     void UpdateSensitivity();
